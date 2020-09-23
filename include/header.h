@@ -1,4 +1,8 @@
 
+#ifndef HEADER_H_
+#define HEADER_H_
+
+
 //targets
 volatile int tspeed;//target speed
 //! currently tspeed is in radian per cycles
@@ -37,3 +41,7 @@ volatile const uint8_t pm1=11;//pwm pin for motor 1
 
 //communication
 int baudrate=9600;
+
+
+
+#endif
