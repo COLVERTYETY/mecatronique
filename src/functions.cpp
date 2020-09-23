@@ -1,7 +1,7 @@
 // #include <header.h>
 // #include <Arduino.h>
 #ifndef header.h
-    #define headert.h
+    #define header.h
 #endif
 #ifndef Arduino.h
     #define Arduino.h
