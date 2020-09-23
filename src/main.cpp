@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include "functions.cpp"
 #ifndef HEADER_H_
     #include "header.h"
 #endif
