@@ -30,9 +30,9 @@ int R;//radius of the wheels
 //? http://www.8bit-era.cz/arduino-timer-interrupts-calculator.html
 
 //pins 
-const byte pencoder=3;//encoder pin
-const byte penable=7;//enable pin
-const byte pm1=11;//pwm pin for motor 1
+const uint8_t pencoder=3;//encoder pin
+const uint8_t penable=7;//enable pin
+volatile const uint8_t pm1=11;//pwm pin for motor 1
 //! 9 and 10 not available for pwm while using timer 1 are available: 5 6 11 3
 
 //communication

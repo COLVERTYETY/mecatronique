@@ -1,6 +1,11 @@
-#include <header.h>
-#include <Arduino.h>
-
+// #include <header.h>
+// #include <Arduino.h>
+#ifndef header.h
+    #define headert.h
+#endif
+#ifndef Arduino.h
+    #define Arduino.h
+#endif
 void encoderinterrupt(){
     tick++;//increase tick count
 }
