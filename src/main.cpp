@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include <functions.cpp>
-#include <header.h>
+#ifndef HEADER_H_
+    #include <header.h>
+#endif
 
 void setup() {
   // put your setup code here, to run once:
