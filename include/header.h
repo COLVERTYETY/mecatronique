@@ -2,7 +2,7 @@
 #ifndef HEADER_H_
 #define HEADER_H_
 
-
+#include <stdint.h>
 //targets
 volatile int tspeed;//target speed
 //! currently tspeed is in radian per cycles

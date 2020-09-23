@@ -1,8 +1,9 @@
 // #include <header.h>
-// #include <Arduino.h>
+#include <Arduino.h>
 #ifndef HEADER_H_
     #include <header.h>
 #endif
+
 void encoderinterrupt(){
     tick++;//increase tick count
 }
