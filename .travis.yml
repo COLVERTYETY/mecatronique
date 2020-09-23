@@ -13,4 +13,4 @@ install:
     - platformio update
 
 script:
-    - platformio run -e <nanoatmega328> 
+    - platformio run  
