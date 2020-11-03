@@ -4,8 +4,8 @@
 
 #include <stdint.h>
 //targets
-volatile int tspeed;//target speed
-volatile int tduration;//target duration
+volatile int tspeed=20;//target speed
+volatile int tduration=1000;//target duration
 volatile int oldtick;
 volatile bool mainloop;
 //ticks
