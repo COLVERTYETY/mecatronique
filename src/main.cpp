@@ -23,6 +23,7 @@ float vitesse_rpm; // nombre de rotations par minute du moteur
 bool dir = true; //permet de changer la direction 
 float res_PID; // résultat de sortie du PID 
 bool led_status = true; //permet de controler la led integrer
+int tickcopy;//copy of tick
 
 void encodeur_callback() 
 { 
@@ -30,35 +31,25 @@ void encodeur_callback()
 }
 ISR(TIMER1_COMPA_res_PIDect){
    //interrupt commands for TIMER 1 here, runs asynchonrously
-  cli(); // interdire les interruptions 
-  vitesse_rpm = nbTic/N;// rotations 
+  cli(); // interdire les interruptions
+  tickcopy = nbTic;//copy of tick so that we can turn back on the interrupts
+  sei();//turn th einterrupt sback on
+  vitesse_rpm = tickcopy/N;// rotations 
   vitesse_rpm *= tpsEnMinute; // rotations en RPM 
   e = targerRPM - vitesse_rpm; // erreur mesurée  
   de = e - olde; // delta erreur mesuré 
   E += e; // somme des erreurs mesurées 
-  if (E>10)
-  {
-    E = 10;
-  } 
-  if (E<-10)
-  { 
-    E = -10;  
-  } 
-  res_PID = e*kp + de*kd + E*ki; // calcul du PID (de 0res_PID à 5res_PID) 
+  if (E>10){E = 10;} //antiwindup
+  if (E<-10){E = -10;} //antiwindup
+  res_PID = e*kp + de*kd + E*ki; // calcul du PID (de 0 à 5) 
   res_PID *= 51; // PID (de 0 à 255 (res_PIDaleurs du "monde" du PWM))
-  if (res_PID>255) 
-  { 
-    res_PID = 255;  
-  } 
-  if (res_PID<0) 
-  { 
-    res_PID = 0; 
-  } 
+  if (res_PID>255){res_PID = 255;} //saturation
+  if (res_PID<0){res_PID = 0;} //saturation
   analogWrite (pin_enable, (int)res_PID); // on écrit sur pin_enable la res_PIDaleur de res_PID 
   nbTic = 0; // on remet la res_PIDaleur nbTic à 0 
   olde = e;  
   Serial.print(vitesse_rpm);// on print la res_PIDaleur des RPM obtenus 
-  sei(); // accepter de noures_PIDeau les interruptions (du encodeur_callback notamment)
+  //sei(); // accepter de noures_PIDeau les interruptions (du encodeur_callback notamment)
 } 
 void setup()  
 { 
