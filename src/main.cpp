@@ -29,7 +29,7 @@ void encodeur_callback()
 { 
   nbTic ++;  
 }
-ISR(TIMER1_COMPA_res_PIDect){
+ISR(TIMER1_COMPA_vect){
   //interrupt commands for TIMER 1 here, runs asynchonrously
   cli(); // interdire les interruptions
   tickcopy = nbTic;//copy of tick so that we can turn back on the interrupts
