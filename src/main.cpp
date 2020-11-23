@@ -3,7 +3,7 @@
 #define kp 0.3 // poids proportionnel 
 #define ki 0.3 // poinds intégral 
 #define kd 0.0 // poids dérivatif 
-#define targerRPM 120 
+#define targerRPM 80 
 
 volatile int e; // erreur proportionnelle 
 volatile int de; // delta erreur (erreur dérivative) 
