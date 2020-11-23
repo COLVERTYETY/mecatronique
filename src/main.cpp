@@ -2,11 +2,11 @@
 
 #define kp 0.3 // poids proportionnel 
 #define ki 0.3 // poinds intégral 
-#define kd 0.0 // poids dérires_PIDatif 
+#define kd 0.0 // poids dérivatif 
 #define targerRPM 120 
 
 volatile int e; // erreur proportionnelle 
-volatile int de; // delta erreur (erreur dérires_PIDatires_PIDe) 
+volatile int de; // delta erreur (erreur dérivative) 
 volatile int E = 0; // erreur intégrale 
 volatile int nbTic = 0; // nb de tics par cycle 
 volatile int olde = 0;  
@@ -15,7 +15,7 @@ volatile int olde = 0;
 #define pin_dir1 12 // direction 1 
 #define pin_dir2 10 // direction 2 
 #define pin_encodeur 2 // a besoin du pin interrupt 
-#define N 224.4 // nb de tic par rotation du moteur ares_PIDec reducteur
+#define N 224.4 // nb de tic par rotation du moteur vec reducteur
 #define tps 10 // délai défini à 10ms 
 
 const float tpsEnMinute = 60000.00/tps;  
@@ -30,26 +30,32 @@ void encodeur_callback()
   nbTic ++;  
 }
 ISR(TIMER1_COMPA_res_PIDect){
-   //interrupt commands for TIMER 1 here, runs asynchonrously
+  //interrupt commands for TIMER 1 here, runs asynchonrously
   cli(); // interdire les interruptions
   tickcopy = nbTic;//copy of tick so that we can turn back on the interrupts
   sei();//turn th einterrupt sback on
+
   vitesse_rpm = tickcopy/N;// rotations 
   vitesse_rpm *= tpsEnMinute; // rotations en RPM 
   e = targerRPM - vitesse_rpm; // erreur mesurée  
   de = e - olde; // delta erreur mesuré 
   E += e; // somme des erreurs mesurées 
+
   if (E>10){E = 10;} //antiwindup
   if (E<-10){E = -10;} //antiwindup
+
   res_PID = e*kp + de*kd + E*ki; // calcul du PID (de 0 à 5) 
-  res_PID *= 51; // PID (de 0 à 255 (res_PIDaleurs du "monde" du PWM))
+  res_PID *= 51; // PID (de 0 à 255 (valeurs du "monde" du PWM))
+
   if (res_PID>255){res_PID = 255;} //saturation
   if (res_PID<0){res_PID = 0;} //saturation
-  analogWrite (pin_enable, (int)res_PID); // on écrit sur pin_enable la res_PIDaleur de res_PID 
-  nbTic = 0; // on remet la res_PIDaleur nbTic à 0 
+
+  analogWrite (pin_enable, (int)res_PID); // on écrit sur pin_enable la valeur de res_pid
+
+  nbTic = 0; // on remet la valeur nbTic à 0 
   olde = e;  
-  Serial.println(vitesse_rpm);// on print la res_PIDaleur des RPM obtenus 
-  //sei(); // accepter de noures_PIDeau les interruptions (du encodeur_callback notamment)
+  Serial.println(vitesse_rpm);// on print la valeur des RPM obtenus 
+  //sei(); // accepter de nouveau les interruptions (du encodeur_callback notamment)
 } 
 void setup()  
 { 
