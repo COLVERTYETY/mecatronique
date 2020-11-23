@@ -3,7 +3,7 @@
 #define kp 0.3 // poids proportionnel 
 #define ki 0.3 // poinds intégral 
 #define kd 0.0 // poids dérivatif 
-#define targerRPM 120
+#define targerRPM 80
 
 volatile int e; // erreur proportionnelle 
 volatile int de; // delta erreur (erreur dérivative) 
@@ -19,6 +19,7 @@ volatile int olde = 0;
 #define tps 10 // délai défini à 10ms 
 
 const float tpsEnMinute = 60000.00/tps;  
+const float ratio = tpsEnMinute/N;
 float vitesse_rpm; // nombre de rotations par minute du moteur 
 bool dir = true; //permet de changer la direction 
 float res_PID; // résultat de sortie du PID 
@@ -35,8 +36,7 @@ ISR(TIMER1_COMPA_vect){
   tickcopy = nbTic;//copy of tick so that we can turn back on the interrupts
   sei();//turn th einterrupt sback on
 
-  vitesse_rpm = tickcopy/N;// rotations 
-  vitesse_rpm *= tpsEnMinute; // rotations en RPM 
+  vitesse_rpm = tickcopy*ratio; // rotations en RPM 
   e = targerRPM - vitesse_rpm; // erreur mesurée  
   de = e - olde; // delta erreur mesuré 
   E += e; // somme des erreurs mesurées 
