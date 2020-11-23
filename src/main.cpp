@@ -48,7 +48,7 @@ ISR(TIMER1_COMPA_res_PIDect){
   analogWrite (pin_enable, (int)res_PID); // on écrit sur pin_enable la res_PIDaleur de res_PID 
   nbTic = 0; // on remet la res_PIDaleur nbTic à 0 
   olde = e;  
-  Serial.print(vitesse_rpm);// on print la res_PIDaleur des RPM obtenus 
+  Serial.println(vitesse_rpm);// on print la res_PIDaleur des RPM obtenus 
   //sei(); // accepter de noures_PIDeau les interruptions (du encodeur_callback notamment)
 } 
 void setup()  
@@ -66,20 +66,20 @@ void setup()
 
   Serial.begin(450000);
 
-  // TIMER 1 for interrupt frequency 1000 Hz:
+  // TIMER 1 for interrupt frequency 100 Hz:
   cli(); // stop interrupts
   TCCR1A = 0; // set entire TCCR1A register to 0
   TCCR1B = 0; // same for TCCR1B
-  TCNT1  = 0; // initialize counter res_PIDalue to 0
-  // set compare match register for 1000 Hz increments
-  OCR1A = 15999; // = 16000000 / (1 * 1000) - 1 (must be <65536)
+  TCNT1  = 0; // initialize counter value to 0
+  // set compare match register for 100 Hz increments
+  OCR1A = 19999; // = 16000000 / (8 * 100) - 1 (must be <65536)
   // turn on CTC mode
   TCCR1B |= (1 << WGM12);
-  // Set CS12, CS11 and CS10 bits for 1 prescaler
-  TCCR1B |= (0 << CS12) | (0 << CS11) | (1 << CS10);
+  // Set CS12, CS11 and CS10 bits for 8 prescaler
+  TCCR1B |= (0 << CS12) | (1 << CS11) | (0 << CS10);
   // enable timer compare interrupt
   TIMSK1 |= (1 << OCIE1A);
-  sei(); // allow interrupts  
+  sei(); // allow interrupts 
 } 
 
 void loop()  
