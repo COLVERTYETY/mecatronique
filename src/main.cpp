@@ -59,10 +59,10 @@ void setup()
 { 
   // put your setup code here, to run once: 
   pinMode(LED_BUILTIN, OUTPUT);  
-  pinMode (pin_enable, OUTPUT);  
-  pinMode (pin_dir1, OUTPUT);  
-  pinMode (pin_enable, OUTPUT);  
-  pinMode (pin_encodeur, INPUT);  
+  pinMode(pin_enable, OUTPUT);  
+  pinMode(pin_dir1, OUTPUT);  
+  pinMode(pin_dir2, OUTPUT);  
+  pinMode(pin_encodeur, INPUT);  
   attachInterrupt (digitalPinToInterrupt(pin_encodeur), encodeur_callback, RISING); //A chaque tic on appelle encodeur_interrupt qui se chargera d'incrémenter de 1 nbTic 
   digitalWrite(pin_enable, LOW); //coupe l alimentation du moteur avant que le sens soit déclaré
   digitalWrite(pin_dir1, dir);  //on declare le sen de rotation
