@@ -28,7 +28,7 @@ ISR(TIMER1_COMPA_vect){
   cli(); // interdire les interruptions
   rtickcopy = rnbTic;//RIGHT
   rnbTic = 0;
-  ltickcopy = rnbTic;//LEFT
+  ltickcopy = lnbTic;//LEFT
   lnbTic = 0;
   sei();//turn th einterrupt sback on
 
