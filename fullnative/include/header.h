@@ -7,7 +7,7 @@
 long distsquared = 999.00;
 
 int slowdowndist = 400; //mm
-int turndist = 300;//
+int turndist = 350;//
 
 volatile long X = 0.00;//coords of robots
 volatile long Y = 0.00;// init at 0,0 
@@ -24,7 +24,7 @@ float cruisespeed = 0.0; // speed of center of momentum
 const int maxspeed = 5;
 const int minspeed = 5;
 const float dspeed = 0.3; // variation of speed
-const float dangle = 0.1; // variationof angle
+const float dangle = PI/16.0; // variationof angle
 volatile int rspeed = 4; //! important to determinate max speed
 volatile int lspeed = 4; //! important to determinate max speed
 float targetangle = 0; // tempangle used for math
@@ -84,8 +84,8 @@ bool led_status = true; //permet de controler la led integrer
 #define pin_trigger 4
 #define pin_echo 5
 
-const float SOUND_SPEED = (340.0 / 1000.0)/2.0;
-const unsigned long MEASURE_TIMEOUT = 2.0/SOUND_SPEED; // T = D/V
+const long SOUND_SPEED = (343.0)/2.0;// 343m/s -> 343mm/ms 
+const unsigned long MEASURE_TIMEOUT = 2000.0/SOUND_SPEED; // T = D/V en ms
 
 long measure;//distance mesuré par ultrasound
 float distance_mm;//la dist ne mm
@@ -94,6 +94,6 @@ float distance_mm;//la dist ne mm
 float wrap(float inangle);//declare the function for easy find
 float alpha;//angle error
 float entraxe = 250.0;//mm
-float wheelradius = 75.00;//mm
+float wheelperimeter = 32.50*32.50*PI;//mm PI*r²
 float l =entraxe;//mm //! TURNING GAIN 
 float K = entraxe/(2.0*l); //! K app [1/2:1]

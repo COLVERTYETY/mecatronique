@@ -57,8 +57,8 @@ ISR(TIMER1_COMPA_vect){
   lolde = le;//LEFT
 
   //calculate angle or displacement
-  rd = (rtickcopy / ratioencoder) * wheelradius;
-  ld = (ltickcopy / ratioencoder) * wheelradius;
+  rd = (rtickcopy / ratioencoder) * wheelperimeter;// mm/cycle
+  ld = (ltickcopy / ratioencoder) * wheelperimeter;
   vcenter = (rd + ld)/2.00;
   realangle += (rd - ld)/entraxe; //calculate new angle
   X+=vcenter*cos(realangle);//update pos
@@ -133,63 +133,65 @@ void setup()
 } 
 
 void loop()  
-{ 
-  // measure dstance
-  digitalWrite(pin_trigger, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(pin_trigger, LOW);
-  measure = pulseIn(pin_echo, HIGH, MEASURE_TIMEOUT);
-  distance_mm = measure * SOUND_SPEED;
-  
-  //should we slow down ?
-  if(distance_mm<slowdowndist){//yes
-    cruisespeed -= dspeed;
-  }else{//faster !!
-    cruisespeed += dspeed;
-  }
-  // limit speed
-  if(cruisespeed<minspeed){cruisespeed = minspeed;}
-  else if(cruisespeed>maxspeed){cruisespeed = maxspeed;}
-
-  //should we turn 
-  if(distance_mm<turndist){//yes
-    obsangle += dangle;
-  }else if(obsangle>0){// no correct
-    obsangle -= dangle;
-  }else if(obsangle<0){//straight line
-    obsangle = 0;
-  }
-
+{
   //are we there yet?
   distsquared = (X2-X)*(X2-X) + (Y2-Y)*(Y2-Y);
-  if(distsquared<=epsilon){
+  if(distsquared<=epsilon){//yes we have arrived
     Serial.println("WE HAVE ARRIVED");
     digitalWrite(pin_lenable, LOW);
     digitalWrite(pin_renable, LOW);
     cruisespeed = 0.00;
-  }
+    cli();
+  }else{// still have to go on...
+    // measure dstance
+    digitalWrite(pin_trigger, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(pin_trigger, LOW);
+    measure = pulseIn(pin_echo, HIGH, MEASURE_TIMEOUT);
+    distance_mm = measure * SOUND_SPEED;
+    
+    //should we slow down ?
+    if(distance_mm<slowdowndist){//yes
+      cruisespeed -= dspeed;
+    }else{//faster !!
+      cruisespeed += dspeed;
+    }
+    // limit speed
+    if(cruisespeed<minspeed){cruisespeed = minspeed;}
+    else if(cruisespeed>maxspeed){cruisespeed = maxspeed;}
 
-  //calculate objangle
-  objangle = atan2(Y2-Y,X2-X);
+    //should we turn 
+    if(distance_mm<turndist){//yes
+      obsangle += 4*dangle;
+    }else if(obsangle>0){// no correct
+      obsangle -= dangle; //takes 4 loops to recover
+    }else if(obsangle<0){//straight line
+      obsangle = 0;
+    }
+
+    //calculate objangle
+    objangle = atan2(Y2-Y,X2-X);
+    
+    // point forward steering
+    targetangle = wrap(objangle + obsangle); // calculate deviation angle
+    alpha = wrap(targetangle - realangle); // calculate error
+    rspeed = (int) (cruisespeed*(cos(alpha) + (K*sin(alpha)))); //caclultae wheel speeds
+    lspeed = (int) (cruisespeed*(cos(alpha) - (K*sin(alpha)))); //calculate wheel speeds
+
+    //according to speed change dir
+    rdir = (rspeed>0);//RIGHT
+    ldir = (lspeed>0);//LEFT
+    digitalWrite(pin_rdir1, rdir);  //RIGHT
+    digitalWrite(pin_rdir2, !rdir); 
+    digitalWrite(pin_ldir1, ldir);  //LEFT
+    digitalWrite(pin_ldir2, !ldir);
+
+    // led 
+    digitalWrite(LED_BUILTIN, led_status);//
+    led_status = ! led_status;  
+    // delay(100);  // this is really optional
+    }
   
-  // point forward steering
-  targetangle = wrap(objangle + obsangle); // calculate deviation angle
-  alpha = wrap(targetangle - realangle); // calculate error
-  rspeed = (int) (cruisespeed*(cos(alpha) + (K*sin(alpha)))); //caclultae wheel speeds
-  lspeed = (int) (cruisespeed*(cos(alpha) - (K*sin(alpha)))); //calculate wheel speeds
-
-  //according to speed change dir
-  rdir = (rspeed>0);//RIGHT
-  ldir = (lspeed>0);//LEFT
-  digitalWrite(pin_rdir1, rdir);  //RIGHT
-  digitalWrite(pin_rdir2, !rdir); 
-  digitalWrite(pin_ldir1, ldir);  //LEFT
-  digitalWrite(pin_ldir2, !ldir);
-
-  // led 
-  digitalWrite(LED_BUILTIN, led_status);//
-  led_status = ! led_status;  
-  // delay(100);  // this is really optional
 } 
 
 float wrap(float inangle){
