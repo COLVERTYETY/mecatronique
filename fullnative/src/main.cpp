@@ -55,8 +55,15 @@ ISR(TIMER1_COMPA_vect){
   analogWrite (pin_lenable, lres_PID); // LEFT
   rolde = re;//RIGHT  
   lolde = le;//LEFT
-  realangle += (rtickcopy - ltickcopy)/entraxe; //calculate new angle
+
   //calculate angle or displacement
+  rd = (rtickcopy / ratioencoder) * wheelradius;
+  ld = (ltickcopy / ratioencoder) * wheelradius;
+  vcenter = (rd + ld)/2.00;
+  realangle += (rd - ld)/entraxe; //calculate new angle
+  X+=vcenter*cos(realangle);//update pos
+  Y+=vcenter*sin(realangle);// simple trigonometrics
+
 
   Serial.print(ltickcopy);// on print 
   Serial.print(" ");// on print 
@@ -146,13 +153,25 @@ void loop()
 
   //should we turn 
   if(distance_mm<turndist){//yes
-    obsangle += 2*dangle;
+    obsangle += dangle;
   }else if(obsangle>0){// no correct
-    obsangle -= 2*dangle;
+    obsangle -= dangle;
   }else if(obsangle<0){//straight line
     obsangle = 0;
   }
 
+  //are we there yet?
+  distsquared = (X2-X)*(X2-X) + (Y2-Y)*(Y2-Y);
+  if(distsquared<=epsilon){
+    Serial.println("WE HAVE ARRIVED");
+    digitalWrite(pin_lenable, LOW);
+    digitalWrite(pin_renable, LOW);
+    cruisespeed = 0.00;
+  }
+
+  //calculate objangle
+  objangle = atan2(Y2-Y,X2-X);
+  
   // point forward steering
   targetangle = wrap(objangle + obsangle); // calculate deviation angle
   alpha = wrap(targetangle - realangle); // calculate error
