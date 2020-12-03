@@ -15,7 +15,7 @@ volatile int rspeed = 4; //! important to determinate max speed
 volatile int lspeed = 4; //! important to determinate max speed
 float targetangle = 0; // tempangle used for math
 float objangle = 0; // the desired angle
-float realangle = 0; // the real angle of the bot
+volatile float realangle = 0; // the real angle of the bot
 float obsangle = 0; // angle buffer for avoidance
 
 ///         RIGHT

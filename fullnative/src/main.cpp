@@ -55,6 +55,9 @@ ISR(TIMER1_COMPA_vect){
   analogWrite (pin_lenable, lres_PID); // LEFT
   rolde = re;//RIGHT  
   lolde = le;//LEFT
+  realangle += (rtickcopy - ltickcopy)/entraxe; //calculate new angle
+  //calculate angle or displacement
+
   Serial.print(ltickcopy);// on print 
   Serial.print(" ");// on print 
   Serial.println(rtickcopy);// on print 
@@ -153,8 +156,16 @@ void loop()
   // point forward steering
   targetangle = wrap(objangle + obsangle); // calculate deviation angle
   alpha = wrap(targetangle - realangle); // calculate error
-  rspeed = (int) (cruisespeed*(cos(alpha) + (K*sin(alpha))));
-  lspeed = (int) (cruisespeed*(cos(alpha) - (K*sin(alpha))));
+  rspeed = (int) (cruisespeed*(cos(alpha) + (K*sin(alpha)))); //caclultae wheel speeds
+  lspeed = (int) (cruisespeed*(cos(alpha) - (K*sin(alpha)))); //calculate wheel speeds
+
+  //according to speed change dir
+  rdir = (rspeed>0);//RIGHT
+  ldir = (lspeed>0);//LEFT
+  digitalWrite(pin_rdir1, rdir);  //RIGHT
+  digitalWrite(pin_rdir2, !rdir); 
+  digitalWrite(pin_ldir1, ldir);  //LEFT
+  digitalWrite(pin_ldir2, !ldir);
 
   // led 
   digitalWrite(LED_BUILTIN, led_status);//
