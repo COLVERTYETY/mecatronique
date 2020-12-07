@@ -4,11 +4,11 @@
 #define kd 0 // poids dérivatif 
 
 
-#define epsilon 1000 // lin distance to goal before stop //! is squared for no sqrt
+#define epsilon 1000 // min distance to goal before stop //! is squared for no sqrt
 long distsquared = 999.00;
 
-int slowdowndist = 400; //mm
-int turndist = 350;//
+int slowdowndist = 35000; //mm //! should be square of actual value for computational reasons
+int turndist =     30000;//? to remove ?
 
 volatile long X = 0.00;//coords of robots
 volatile long Y = 0.00;// init at 0,0 
@@ -87,12 +87,18 @@ bool vstatus = true;
 ///               ULTRASOUND
 
 ultrasond first(5,4,0);//! pins must be figured out
+ultrasond second(5,1,0);//? can use the same echo ?
+const int sensorarraylength=2;
+ultrasond sensorarray[sensorarraylength]{first, second};
 float distance_mm;
+float Xsensor;
+float Ysensor;
+const float kw = 10.0;
 
 //              POINTFORWARD STEERING
 float wrap(float inangle);//declare the function for easy find
 float alpha;//angle error
 const float entraxe = 219.0;//mm
 const float wheelperimeter = 75.0*PI;//mm PI*diameter
-const float l =entraxe/2;//mm //! TURNING GAIN 
+const float l =entraxe;//mm //! TURNING GAIN 
 const float K = entraxe/(2.0*l); //! K app [1/2:1]

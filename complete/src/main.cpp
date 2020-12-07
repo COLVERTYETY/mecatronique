@@ -102,8 +102,10 @@ void setup()
   digitalWrite(led_J, HIGH);
   digitalWrite(led_V, HIGH);
   //ultrasound
-    first.init();
-  // put your setup code here, to run once: 
+  for(int i =0;i<sensorarraylength;i++){
+    sensorarray[i].init();
+  }
+  // init pins yes
   pinMode(pin_renable, OUTPUT);  //RIGHT
   pinMode(pin_rdir1, OUTPUT);  
   pinMode(pin_rdir2, OUTPUT);  
@@ -167,7 +169,18 @@ void loop()
     cruisespeed = 0.00;
   }else{// still have to go on...
     // measure dstance
-      distance_mm = first.measure();
+    Xsensor=0;
+    Ysensor=0;
+    float temp;
+    for(int i =0;i<sensorarraylength;i++){
+      temp = sensorarray[i].measure();
+      if(temp!=0){
+        temp = (kw/(temp*temp));//so that we don t do this twice
+        Xsensor+=temp*cos(sensorarray[i].angle);
+        Ysensor+=temp*sin(sensorarray[i].angle);
+      }
+    }
+    distance_mm = Xsensor*Xsensor + Ysensor*Ysensor; //! is squared
     //should we slow down ?
     digitalWrite(led_J,distance_mm == 0);//show that an obstacle has been detected
     if(distance_mm<slowdowndist && distance_mm != 0.00){//yes
@@ -180,15 +193,15 @@ void loop()
     if(cruisespeed<minspeed){cruisespeed = minspeed;}
     else if(cruisespeed>maxspeed){cruisespeed = maxspeed;}
 
-    //should we turn
-    if(distance_mm<turndist && distance_mm != 0.00){//yes
-      obsangle += 4*dangle;
-    }else if(obsangle>0){// no correct
-      obsangle -= dangle; //takes 4 loops to recover
-    }else if(obsangle<0){//straight line
-      obsangle = 0;
-    }
-
+    //should we turn ?
+    // if(distance_mm<turndist && distance_mm != 0.00){//yes
+    //   obsangle += 4*dangle;
+    // }else if(obsangle>0){// no correct
+    //   obsangle -= dangle; //takes 4 loops to recover
+    // }else if(obsangle<0){//straight line
+    //   obsangle = 0;
+    // }
+    obsangle = atan2(Ysensor, Xsensor)+realangle + PI;// + realangle to bring it to absolut coords and pi to +180°
     //calculate objangle
     objangle = atan2(Y2-Y,X2-X);
     
@@ -199,7 +212,7 @@ void loop()
     lspeed = (int) (cruisespeed*(cos(alpha) - (K*sin(alpha)))); //calculate wheel speeds
 
     // led 
-    digitalWrite(LED_BUILTIN, led_status);//
+    digitalWrite(LED_BUILTIN, led_status);// proof of normal operation
     led_status = ! led_status;  
     // delay(100);  // this is really optional
     }
