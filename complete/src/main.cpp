@@ -201,7 +201,7 @@ void loop()
     // }else if(obsangle<0){//straight line
     //   obsangle = 0;
     // }
-    obsangle = atan2(Ysensor, Xsensor)+realangle + PI;// + realangle to bring it to absolut coords and pi to +180°
+    obsangle = wrap(atan2(Ysensor, Xsensor)+realangle + PI);// + realangle to bring it to absolut coords and pi to +180°
     //calculate objangle
     objangle = atan2(Y2-Y,X2-X);
     
