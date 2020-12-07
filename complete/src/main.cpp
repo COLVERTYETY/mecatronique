@@ -1,6 +1,10 @@
 #include <Arduino.h> 
 #include "header.h"
 
+float wrap(float inangle){
+  return atan2(sin(inangle),cos(inangle));
+}
+
 void rencodeur_callback() //RIGHT
 {
   if(digitalRead(pin_rencodeur2)){
@@ -45,9 +49,23 @@ ISR(TIMER1_COMPA_vect){
   if (lE<-512){lE = -512;}
 
   rres_PID = re*kp + rde*kd + rE*ki; // RIGHT
-  if (rres_PID>255){rres_PID = 255;}
-  else if (rres_PID<0){rres_PID = 0;} 
   lres_PID = le*kp + lde*kd + lE*ki; // LEFT
+  //according to speed change dir so pid res always positiv
+    if( rdir != (rres_PID>0)){
+      rdir = (rres_PID>0);//RIGHT
+      lres_PID = abs(lres_PID);
+      digitalWrite(pin_rdir1, rdir);  //RIGHT
+      digitalWrite(pin_rdir2, !rdir);
+    }
+
+    if( ldir != (lres_PID>0)){
+      ldir = (lres_PID>0);//LEFT
+      lres_PID = abs(lres_PID);
+      digitalWrite(pin_ldir1, ldir);  //LEFT
+      digitalWrite(pin_ldir2, !ldir);
+    }
+  if (rres_PID>255){rres_PID = 255;}//saturate pid results
+  else if (rres_PID<0){rres_PID = 0;} 
   if (lres_PID>255){lres_PID = 255;}
   else if (lres_PID<0){lres_PID = 0;}
 
@@ -84,9 +102,7 @@ void setup()
   digitalWrite(led_J, HIGH);
   digitalWrite(led_V, HIGH);
   //ultrasound
-  //pinMode(pin_trigger, OUTPUT);
-  //digitalWrite(pin_trigger, LOW); // La broche TRIGGER doit être à LOW au repos
-  //pinMode(pin_echo, INPUT);
+    first.init();
   // put your setup code here, to run once: 
   pinMode(pin_renable, OUTPUT);  //RIGHT
   pinMode(pin_rdir1, OUTPUT);  
@@ -106,14 +122,14 @@ void setup()
   digitalWrite(pin_ldir1, ldir);  
   digitalWrite(pin_ldir2, !ldir); 
 
-  while (startdelai>0){ ///just a timer before start
+  while (startdelai>50){ ///just a timer before start
     Serial.println(startdelai);
     digitalWrite(LED_BUILTIN, led_status);
     led_status = !led_status;
     rstatus = ! rstatus;
     digitalWrite( led_R, rstatus);
-    delay(startdelai);
-    startdelai -= 100;
+    delay((int)startdelai);
+    startdelai *= 0.9;
   }
   rstatus = true;
   digitalWrite(led_R, rstatus);
@@ -149,21 +165,11 @@ void loop()
     digitalWrite(pin_lenable, LOW);
     digitalWrite(pin_renable, LOW);
     cruisespeed = 0.00;
-    cli();
   }else{// still have to go on...
     // measure dstance
-    //digitalWrite(pin_trigger, HIGH);
-    //delayMicroseconds(10);
-    //digitalWrite(pin_trigger, LOW);
-    //measure = pulseIn(pin_echo, HIGH, MEASURE_TIMEOUT);
-    //distance_mm = measure * SOUND_SPEED;
-    for(int i =0;i<1000;i++){
-      for(int j=0;j<1000;j++){
-
-      }
-    }
-    distance_mm = 0.00;
+      distance_mm = first.measure();
     //should we slow down ?
+    digitalWrite(led_J,distance_mm == 0);//show that an obstacle has been detected
     if(distance_mm<slowdowndist && distance_mm != 0.00){//yes
     cruisespeed -= dspeed;
     }else{//faster !!
@@ -192,18 +198,6 @@ void loop()
     rspeed = (int) (cruisespeed*(cos(alpha) + (K*sin(alpha)))); //caclultae wheel speeds
     lspeed = (int) (cruisespeed*(cos(alpha) - (K*sin(alpha)))); //calculate wheel speeds
 
-    //according to speed change dir
-    if( rdir != (rspeed>0)){
-      rdir = (rspeed>0);//RIGHT
-      digitalWrite(pin_rdir1, rdir);  //RIGHT
-      digitalWrite(pin_rdir2, !rdir);
-    }
-
-    if( ldir != (lspeed>0)){
-      ldir = (lspeed>0);//LEFT
-      digitalWrite(pin_ldir1, ldir);  //LEFT
-      digitalWrite(pin_ldir2, !ldir);
-    }
     // led 
     digitalWrite(LED_BUILTIN, led_status);//
     led_status = ! led_status;  
@@ -212,6 +206,3 @@ void loop()
   
 } 
 
-float wrap(float inangle){
-  return atan2(sin(inangle),cos(inangle));
-}

@@ -1,3 +1,4 @@
+#include "ultrasound.cpp"
 #define kp 30 // poids proportionnel 
 #define ki 30 // poinds intégral 
 #define kd 0 // poids dérivatif 
@@ -33,8 +34,6 @@ volatile float realangle = 0; // the real angle of the bot
 float obsangle = 0; // angle buffer for avoidance
 
 
-
-
 ///         RIGHT
 int re; // erreur proportionnelle 
 int rde; // delta erreur (erreur dérivative) 
@@ -67,14 +66,14 @@ volatile int ltickcopy;//copy of tick
 #define pin_lencodeur2 5//sens de rotation du moteur
 
 ///          RIGHT
-bool rdir = true; //permet de changer la direction 
+volatile bool rdir = true; //permet de changer la direction 
 int rres_PID; // résultat de sortie du PID 
 
 ///          LEFT
-bool ldir = true; //permet de changer la direction 
+volatile bool ldir = true; //permet de changer la direction 
 int lres_PID; // résultat de sortie du PID 
 
-int startdelai = 1000;
+float startdelai = 1000.0;
 bool led_status = true; //permet de controler la led integrer
 
 ///                 LEDs
@@ -87,19 +86,13 @@ bool vstatus = true;
 
 ///               ULTRASOUND
 
-#define pin_trigger 4
-#define pin_echo 5
-
-const long SOUND_SPEED = (343.0)/2.0;// 343m/s -> 343mm/ms 
-const unsigned long MEASURE_TIMEOUT = 2000.0/SOUND_SPEED; // T = D/V en ms
-
-long measure;//distance mesuré par ultrasound
-float distance_mm;//la dist ne mm
+ultrasond first(5,4,0);//! pins must be figured out
+float distance_mm;
 
 //              POINTFORWARD STEERING
 float wrap(float inangle);//declare the function for easy find
 float alpha;//angle error
-float entraxe = 219.0;//mm
-float wheelperimeter = 75.0*PI;//mm PI*diameter
-float l =entraxe;//mm //! TURNING GAIN 
-float K = entraxe/(2.0*l); //! K app [1/2:1]
+const float entraxe = 219.0;//mm
+const float wheelperimeter = 75.0*PI;//mm PI*diameter
+const float l =entraxe/2;//mm //! TURNING GAIN 
+const float K = entraxe/(2.0*l); //! K app [1/2:1]

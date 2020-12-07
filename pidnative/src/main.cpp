@@ -23,8 +23,8 @@ ISR(TIMER1_COMPA_vect){
   de = e - olde; // delta erreur mesuré 
   E += e; // somme des erreurs mesurées 
 
-  if (E>10){E = 512;} //antiwindup
-  if (E<-10){E = -512;} //antiwindup
+  if (E>512){E = 512;} //antiwindup
+  if (E<-512){E = -512;} //antiwindup
 
   res_PID = e*kp + de*kd + E*ki; // calcul du PID (de 0 à 255) 
   if (res_PID>255){res_PID = 255;} //saturation
