@@ -76,24 +76,24 @@ int lres_PID; // résultat de sortie du PID
 float startdelai = 1000.0;
 bool led_status = true; //permet de controler la led integrer
 
-///                 LEDs
+///                 LEDs pour visualisation de l activité du robot
 #define led_R A1
 #define led_J A2
 #define led_V A3
-bool rstatus = true;
-bool jstatus = true;
-bool vstatus = true;
+bool rstatus = true; // active low
+bool jstatus = true; // active low
+bool vstatus = true; // active low
 
 ///               ULTRASOUND
 
 ultrasond left(13,A5,0.26);//! pins must be figured out
 ultrasond right(13,A4,-0.26);//? can use the same echo ?
 const int sensorarraylength=2;
-ultrasond sensorarray[sensorarraylength]{left, right};
+ultrasond sensorarray[sensorarraylength]{left, right};// tableau de capteurs
 float distance_mm;
-float Xsensor;
+float Xsensor;//vecteur obstacle
 float Ysensor;
-const float kw = 10.0;
+const float kw = 10.0;//poids de réduction de la force de repulsion
 
 //              POINTFORWARD STEERING
 float wrap(float inangle);//declare the function for easy find
