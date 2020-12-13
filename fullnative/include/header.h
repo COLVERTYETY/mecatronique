@@ -13,7 +13,7 @@ volatile long X = 0.00;//coords of robots
 volatile long Y = 0.00;// init at 0,0 
 
 long X2 = 2000.00;//coords of objectif
-long Y2 = 2000.00;//should be a straight line
+long Y2 = 0;//should be a straight line
 
 float ratioencoder = 220.00;//number of motor tick for 1 wheel turn
 float rd = 0.0;//actual distance in mm 
@@ -53,16 +53,16 @@ volatile int ltickcopy;//copy of tick
 
 ///         RIGHT
 #define pin_renable 11 // a besoin du PWM 
-#define pin_rdir1 12 // direction 1 
-#define pin_rdir2 10 // direction 2 
+#define pin_rdir1 10 // direction 1 
+#define pin_rdir2 12 // direction 2 
 #define pin_rencodeur 2 // a besoin du pin interrupt 
 #define pin_rencodeur2 4//sens de rotation du moteur
 
 
 ///         LEFT
 #define pin_lenable 6 // a besoin du PWM 
-#define pin_ldir1 8 // direction 1 
-#define pin_ldir2 7 // direction 2 
+#define pin_ldir1 7 // direction 1 
+#define pin_ldir2 8 // direction 2 
 #define pin_lencodeur 3 // a besoin du pin interrupt 
 #define pin_lencodeur2 5//sens de rotation du moteur
 
@@ -101,5 +101,5 @@ float wrap(float inangle);//declare the function for easy find
 float alpha;//angle error
 float entraxe = 219.0;//mm
 float wheelperimeter = 75.0*PI;//mm PI*diameter
-float l =entraxe;//mm //! TURNING GAIN 
+float l =entraxe/2;//mm //! TURNING GAIN 
 float K = entraxe/(2.0*l); //! K app [1/2:1]

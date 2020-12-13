@@ -1,10 +1,6 @@
 #include <Arduino.h> 
 #include "header.h"
 
-float wrap(float inangle){
-  return atan2(sin(inangle),cos(inangle));
-}
-
 void rencodeur_callback() //RIGHT
 {
   if(digitalRead(pin_rencodeur2)){
@@ -49,23 +45,9 @@ ISR(TIMER1_COMPA_vect){
   if (lE<-512){lE = -512;}
 
   rres_PID = re*kp + rde*kd + rE*ki; // RIGHT
-  lres_PID = le*kp + lde*kd + lE*ki; // LEFT
-  //according to speed change dir so pid res always positiv
-    if( rdir != (rres_PID>0)){
-      rdir = (rres_PID>0);//RIGHT
-      lres_PID = abs(lres_PID);
-      digitalWrite(pin_rdir1, rdir);  //RIGHT
-      digitalWrite(pin_rdir2, !rdir);
-    }
-
-    if( ldir != (lres_PID>0)){
-      ldir = (lres_PID>0);//LEFT
-      lres_PID = abs(lres_PID);
-      digitalWrite(pin_ldir1, ldir);  //LEFT
-      digitalWrite(pin_ldir2, !ldir);
-    }
-  if (rres_PID>255){rres_PID = 255;}//saturate pid results
+  if (rres_PID>255){rres_PID = 255;}
   else if (rres_PID<0){rres_PID = 0;} 
+  lres_PID = le*kp + lde*kd + lE*ki; // LEFT
   if (lres_PID>255){lres_PID = 255;}
   else if (lres_PID<0){lres_PID = 0;}
 
@@ -83,9 +65,9 @@ ISR(TIMER1_COMPA_vect){
   Y+=vcenter*sin(realangle);// simple trigonometrics
 
 
-  //Serial.print(X);// on print 
-  //Serial.print(" ");// on print 
-  //Serial.println(Y);// on print 
+  Serial.print(X);// on print 
+  Serial.print(" ");// on print 
+  Serial.println(Y);// on print 
 }
 
 void setup()  
@@ -102,10 +84,10 @@ void setup()
   digitalWrite(led_J, HIGH);
   digitalWrite(led_V, HIGH);
   //ultrasound
-  for(int i =0;i<sensorarraylength;i++){
-    sensorarray[i].init();
-  }
-  // init pins yes
+  //pinMode(pin_trigger, OUTPUT);
+  //digitalWrite(pin_trigger, LOW); // La broche TRIGGER doit être à LOW au repos
+  //pinMode(pin_echo, INPUT);
+  // put your setup code here, to run once: 
   pinMode(pin_renable, OUTPUT);  //RIGHT
   pinMode(pin_rdir1, OUTPUT);  
   pinMode(pin_rdir2, OUTPUT);  
@@ -124,14 +106,14 @@ void setup()
   digitalWrite(pin_ldir1, ldir);  
   digitalWrite(pin_ldir2, !ldir); 
 
-  while (startdelai>50){ ///just a timer before start
+  while (startdelai>0){ ///just a timer before start
     Serial.println(startdelai);
     digitalWrite(LED_BUILTIN, led_status);
     led_status = !led_status;
     rstatus = ! rstatus;
     digitalWrite( led_R, rstatus);
-    delay((int)startdelai);
-    startdelai *= 0.9;
+    delay(startdelai);
+    startdelai -= 100;
   }
   rstatus = true;
   digitalWrite(led_R, rstatus);
@@ -164,29 +146,25 @@ void loop()
   if(distsquared<=epsilon){//yes we have arrived
     vstatus = false;
     digitalWrite(led_V, vstatus);
-    digitalWrite(pin_lenable, LOW);
-    digitalWrite(pin_renable, LOW);
-    cruisespeed = 0.00;
+    obj_index++;
+    obj_index = obj_index%3;
+    Y2 = yobj[obj_index];
+    X2 = xobj[obj_index];
+    Serial.println("arrived");
   }else{// still have to go on...
     // measure dstance
-    Xsensor=0;
-    Ysensor=0;
-    float temp;
-    for(int i =0;i<sensorarraylength;i++){
-      temp = sensorarray[i].measure();
-      delay(100);
-      if(temp>=0.01){
-        temp = (kw/(temp*temp));//so that we don t do this twice
-        Serial.print(temp);
-        Serial.print(" ");
-        Xsensor+=temp*cos(sensorarray[i].angle);
-        Ysensor+=temp*sin(sensorarray[i].angle);
+    //digitalWrite(pin_trigger, HIGH);
+    //delayMicroseconds(10);
+    //digitalWrite(pin_trigger, LOW);
+    //measure = pulseIn(pin_echo, HIGH, MEASURE_TIMEOUT);
+    //distance_mm = measure * SOUND_SPEED;
+    for(int i =0;i<1000;i++){
+      for(int j=0;j<1000;j++){
+
       }
     }
-    Serial.println("");
-    distance_mm = Xsensor*Xsensor + Ysensor*Ysensor; //! is squared
+    distance_mm = 0.00;
     //should we slow down ?
-    digitalWrite(led_J,distance_mm == 0);//show that an obstacle has been detected
     if(distance_mm<slowdowndist && distance_mm != 0.00){//yes
     cruisespeed -= dspeed;
     }else{//faster !!
@@ -197,15 +175,15 @@ void loop()
     if(cruisespeed<minspeed){cruisespeed = minspeed;}
     else if(cruisespeed>maxspeed){cruisespeed = maxspeed;}
 
-    //should we turn ?
-    // if(distance_mm<turndist && distance_mm != 0.00){//yes
-    //   obsangle += 4*dangle;
-    // }else if(obsangle>0){// no correct
-    //   obsangle -= dangle; //takes 4 loops to recover
-    // }else if(obsangle<0){//straight line
-    //   obsangle = 0;
-    // }
-    obsangle = wrap(atan2(Ysensor, Xsensor)+realangle + PI);// + realangle to bring it to absolut coords and pi to +180°
+    //should we turn
+    if(distance_mm<turndist && distance_mm != 0.00){//yes
+      obsangle += 4*dangle;
+    }else if(obsangle>0){// no correct
+      obsangle -= dangle; //takes 4 loops to recover
+    }else if(obsangle<0){//straight line
+      obsangle = 0;
+    }
+
     //calculate objangle
     objangle = atan2(Y2-Y,X2-X);
     
@@ -215,11 +193,26 @@ void loop()
     rspeed = (int) (cruisespeed*(cos(alpha) + (K*sin(alpha)))); //caclultae wheel speeds
     lspeed = (int) (cruisespeed*(cos(alpha) - (K*sin(alpha)))); //calculate wheel speeds
 
+    //according to speed change dir
+    if( rdir != (rspeed>0)){
+      rdir = (rspeed>0);//RIGHT
+      digitalWrite(pin_rdir1, rdir);  //RIGHT
+      digitalWrite(pin_rdir2, !rdir);
+    }
+
+    if( ldir != (lspeed>0)){
+      ldir = (lspeed>0);//LEFT
+      digitalWrite(pin_ldir1, ldir);  //LEFT
+      digitalWrite(pin_ldir2, !ldir);
+    }
     // led 
-    digitalWrite(LED_BUILTIN, led_status);// proof of normal operation
+    digitalWrite(LED_BUILTIN, led_status);//
     led_status = ! led_status;  
     // delay(100);  // this is really optional
     }
   
 } 
 
+float wrap(float inangle){
+  return atan2(sin(inangle),cos(inangle));
+}
